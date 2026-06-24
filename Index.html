@@ -2,242 +2,118 @@
 <html lang="bn">
 <head>
   <meta charset="UTF-8">
-  <title>স্কুল ম্যানেজমেন্ট ERP</title>
+  <title>শিক্ষার্থী তালিকা</title>
+  <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
-    :root { --primary-color: #1e3a8a; --sidebar-width: 260px; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; }
-    .login-container { max-width: 450px; margin-top: 10%; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-radius: 12px; }
-    .sidebar { width: var(--sidebar-width); height: 100vh; position: fixed; background: var(--primary-color); color: white; transition: all 0.3s; }
-    .main-content { margin-left: var(--sidebar-width); padding: 30px; transition: all 0.3s; }
-    .nav-link { color: rgba(255,255,255,0.8); margin: 5px 15px; border-radius: 6px; }
-    .nav-link:hover, .nav-link.active { color: white; background: rgba(255,255,255,0.1); }
-    .dashboard-card { border-left: 5px solid var(--primary-color); border-radius: 8px; }
-    .hidden { display: none !important; }
+    body { background-color: #f8f9fa; padding: 30px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .table-container { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .status-active { background-color: #d1e7dd; color: #0f5132; padding: 4px 10px; border-radius: 20px; font-size: 14px; }
+    .status-inactive { background-color: #f8d7da; color: #842029; padding: 4px 10px; border-radius: 20px; font-size: 14px; }
   </style>
 </head>
 <body>
 
-  <div id="login-screen" class="container login-container bg-white p-5 animate__animated animate__fadeIn">
-    <div class="text-center mb-4">
-      <i class="fa-solid fa-school fa-3x text-primary mb-2"></i>
-      <h3 class="fw-bold">অ্যাডভান্সড স্কুল ERP</h3>
-      <p class="text-muted">দয়া করে আপনার অ্যাকাউন্টে লগইন করুন</p>
-    </div>
-    <form id="login-form" onsubmit="handleLogin(event)">
-      <div class="mb-3">
-        <label class="form-label">ইউজারনেম / ইউজার আইডি</label>
-        <div class="input-group">
-          <span class="input-group-text"><i class="fa fa-user"></i></span>
-          <input type="text" id="username" class="form-control" placeholder="username" required>
-        </div>
+  <div class="container">
+    <div class="table-container">
+      <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <h2 class="fw-bold text-primary">🏫 শিক্ষার্থী ডাটাবেজ (Google Sheets Live)</h2>
+        <button onclick="fetchDataFromServer()" class="btn btn-primary">🔄 রিফ্রেশ ডাটা</button>
       </div>
-      <div class="mb-4">
-        <label class="form-label">পাসওয়ার্ড</label>
-        <div class="input-group">
-          <span class="input-group-text"><i class="fa fa-lock"></i></span>
-          <input type="password" id="password" class="form-control" placeholder="******" required>
-        </div>
+
+      <!-- লোডিং এনিমেশন -->
+      <div id="loading" class="text-center p-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-2 text-secondary">গুগল শিট থেকে ডাটা লোড হচ্ছে, দয়া করে অপেক্ষা করুন...</p>
       </div>
-      <button type="submit" id="login-btn" class="btn btn-primary w-100 py-2">
-        <span id="login-spinner" class="spinner-border spinner-border-sm hidden"></span> লগইন করুন
-      </button>
-    </form>
-    <div id="login-alert" class="alert alert-danger mt-3 hidden"></div>
-  </div>
 
-  <div id="app-workspace" class="hidden">
-    <div class="sidebar d-flex flex-column justify-content-between p-3">
-      <div>
-        <div class="text-center mb-4 border-bottom pb-3">
-          <h4 class="fw-bold mb-0 text-white"><i class="fa-solid fa-graduation-cap me-2"></i>School ERP</h4>
-          <span id="user-badge" class="badge bg-warning mt-2 text-dark text-uppercase"></span>
-        </div>
-        <nav class="nav flex-column" id="dynamic-menu">
-          </nav>
+      <!-- এরর মেসেজ -->
+      <div id="error-alert" class="alert alert-danger d-none"></div>
+
+      <!-- ডাটা টেবিল -->
+      <div id="table-wrapper" class="table-responsive d-none">
+        <table class="table table-hover align-middle">
+          <thead class="table-dark">
+            <tr>
+              <th>আইডি (ID)</th>
+              <th>শিক্ষার্থীর নাম</th>
+              <th>শ্রেণী</th>
+              <th>শাখা</th>
+              <th>রোল</th>
+              <th>মোবাইল নম্বর</th>
+              <th>স্ট্যাটাস</th>
+            </tr>
+          </thead>
+          <tbody id="student-table-body">
+            <!-- এখানে জাভাস্ক্রিপ্ট দিয়ে ডাটা ঢুকবে -->
+          </tbody>
+        </table>
       </div>
-      <button onclick="handleLogout()" class="btn btn-danger w-100"><i class="fa-solid fa-sign-out-alt me-2"></i>লগআউট</button>
-    </div>
-
-    <div class="main-content">
-      <header class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm">
-        <h4 id="view-title" class="mb-0 fw-bold text-dark">ড্যাশবোর্ড</h4>
-        <div class="text-end">
-          <div id="live-clock" class="fw-bold text-secondary"></div>
-        </div>
-      </header>
-
-      <div id="view-viewport">
-        </div>
+      
     </div>
   </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    let session = { role: null, userId: null, username: null };
-    let cache = { students: [], teachers: [], results: [] };
-
-    // Initialization 
+    // পেজ লোড হলেই ডাটা কল হবে
     document.addEventListener("DOMContentLoaded", () => {
-      startClock();
+      fetchDataFromServer();
     });
 
-    function startClock() {
-      setInterval(() => {
-        const now = new Date();
-        document.getElementById('live-clock').innerText = now.toLocaleString('bn-BD', { hour12: true });
-      }, 1000);
-    }
+    function fetchDataFromServer() {
+      // রিসেট ভিউ
+      document.getElementById('loading').classList.remove('d-none');
+      document.getElementById('table-wrapper').classList.add('d-none');
+      document.getElementById('error-alert').classList.add('d-none');
 
-    function handleLogin(e) {
-      e.preventDefault();
-      const user = document.getElementById('username').value;
-      const pass = document.getElementById('password').value;
-      
-      document.getElementById('login-btn').disabled = true;
-      document.getElementById('login-spinner').classList.remove('hidden');
-      
+      // গুগল ব্যাকএন্ড থেকে ডাটা আনা
       google.script.run
-        .withSuccessHandler(res => {
-          document.getElementById('login-btn').disabled = false;
-          document.getElementById('login-spinner').classList.add('hidden');
+        .withSuccessHandler(response => {
+          document.getElementById('loading').classList.add('d-none');
           
-          if(res.success) {
-            session = res;
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('app-workspace').classList.remove('hidden');
-            document.getElementById('user-badge').innerText = res.role;
-            buildMenu();
-            loadDashboard();
+          if(response.success) {
+            renderTable(response.students);
           } else {
-            const alert = document.getElementById('login-alert');
-            alert.innerText = res.message;
-            alert.classList.remove('hidden');
+            showError("ডাটা আনতে সমস্যা হয়েছে: " + response.error);
           }
         })
-        .loginUser(user, pass);
+        .withFailureHandler(err => {
+          document.getElementById('loading').classList.add('d-none');
+          showError("সার্ভার কানেকশন এরর: " + err);
+        })
+        .getStudentsData();
     }
 
-    function buildMenu() {
-      const menu = document.getElementById('dynamic-menu');
-      let html = `<a href="#" class="nav-link active" onclick="loadDashboard()"><i class="fa-solid fa-chart-pie me-2"></i>ড্যাশবোর্ড</a>`;
-      
-      if(session.role === 'Admin') {
-        html += `
-          <a href="#" class="nav-link" onclick="loadStudentManagement()"><i class="fa-solid fa-user-graduate me-2"></i>শিক্ষার্থী মডিউল</a>
-          <a href="#" class="nav-link" onclick="loadTeacherManagement()"><i class="fa-solid fa-chalkboard-teacher me-2"></i>শিক্ষক মডিউল</a>
-          <a href="#" class="nav-link" onclick="loadResultManagement()"><i class="fa-solid fa-file-invoice me-2"></i>ফলাফল ম্যানেজমেন্ট</a>
-        `;
-      } else if (session.role === 'Teacher') {
-        html += `
-          <a href="#" class="nav-link" onclick="loadTeacherProfile()"><i class="fa-solid fa-id-card me-2"></i>আমার প্রোফাইল</a>
-          <a href="#" class="nav-link" onclick="loadResultManagement()"><i class="fa-solid fa-file-invoice me-2"></i>ফলাফল এন্ট্রি</a>
-        `;
-      } else if (session.role === 'Student') {
-        html += `
-          <a href="#" class="nav-link" onclick="loadStudentProfile()"><i class="fa-solid fa-user me-2"></i>আমার প্রোফাইল</a>
-        `;
-      }
-      menu.innerHTML = html;
-    }
+    function renderTable(students) {
+      const tbody = document.getElementById('student-table-body');
+      tbody.innerHTML = ""; // আগের ডাটা পরিষ্কার করা
 
-    function loadDashboard() {
-      document.getElementById('view-title').innerText = "ড্যাশবোর্ড ওভারভিউ";
-      const vp = document.getElementById('view-viewport');
-      vp.innerHTML = `<div class="text-center p-5"><div class="spinner-border text-primary"></div><p class="mt-2">ডাটা লোড হচ্ছে...</p></div>`;
-      
-      google.script.run.withSuccessHandler(data => {
-        vp.innerHTML = `
-          <div class="row g-4 mb-4">
-            <div class="col-md-3"><div class="card p-3 shadow-sm dashboard-card bg-white"><h5>মোট শিক্ষার্থী</h5><h3>${data.totalStudents} জন</h3></div></div>
-            <div class="col-md-3"><div class="card p-3 shadow-sm dashboard-card bg-white"><h5>মোট শিক্ষক</h5><h3>${data.totalTeachers} জন</h3></div></div>
-            <div class="col-md-3"><div class="card p-3 shadow-sm dashboard-card bg-white text-success"><h5>সক্রিয় শিক্ষার্থী</h5><h3>${data.activeStudents} জন</h3></div></div>
-            <div class="col-md-3"><div class="card p-3 shadow-sm dashboard-card bg-white text-info"><h5>সক্রিয় শিক্ষক</h5><h3>${data.activeTeachers} জন</h3></div></div>
-          </div>
-          <div class="row g-4">
-             <div class="col-md-6">
-                <div class="card p-4 bg-white shadow-sm">
-                   <h5 class="fw-bold mb-3"><i class="fa fa-user-plus text-primary me-2"></i>সাম্প্রতিক ভর্তি হওয়া শিক্ষার্থী</h5>
-                   <ul class="list-group list-group-flush">
-                      ${data.recentStudents.map(s => `<li class="list-group-flush d-flex justify-content-between p-2 border-bottom"><span>${s.FullName} (${s.Class})</span><span class="badge bg-secondary">${s.StudentID}</span></li>`).join('')}
-                   </ul>
-                </div>
-             </div>
-             <div class="col-md-6">
-                <div class="card p-4 bg-white shadow-sm">
-                   <h5 class="fw-bold mb-3"><i class="fa-solid fa-cake-candles text-danger me-2"></i>আজকের জন্মদিন নোটিফিকেশন</h5>
-                   <p class="text-muted">আজকে কোনো শিক্ষার্থীর জন্মদিন নেই।</p>
-                </div>
-             </div>
-          </div>
-        `;
-      }).getDashboardData();
-    }
-
-    function loadStudentManagement() {
-      document.getElementById('view-title').innerText = "শিক্ষার্থী মডিউল (অ্যাডমিন প্যানেল)";
-      const vp = document.getElementById('view-viewport');
-      vp.innerHTML = `
-        <div class="card p-4 mb-4 bg-white shadow-sm">
-          <h5 class="fw-bold text-primary mb-3"><i class="fa fa-plus-circle me-2"></i>নতুন শিক্ষার্থী ডেটাবেজে যুক্ত করুন</h5>
-          <form id="student-form" onsubmit="saveStudentForm(event)">
-             <div class="row g-3">
-                <div class="col-md-3"><label class="form-label">ইউনিক আইডি</label><input type="text" id="s_id" class="form-control" required placeholder="STU1001"></div>
-                <div class="col-md-3"><label class="form-label">পূর্ণ নাম (বাংলা/ইংরেজি)</label><input type="text" id="s_name" class="form-control" required></div>
-                <div class="col-md-2"><label class="form-label">শ্রেণী</label><input type="text" id="s_class" class="form-control" required></div>
-                <div class="col-md-2"><label class="form-label">শাখা (Section)</label><input type="text" id="s_sec" class="form-control" required></div>
-                <div class="col-md-2"><label class="form-label">রোল নম্বর</label><input type="number" id="s_roll" class="form-control" required></div>
-                <div class="col-md-3"><label class="form-label">মোবাইল নম্বর</label><input type="text" id="s_mob" class="form-control" required></div>
-                <div class="col-md-3"><label class="form-label">বাবার নাম</label><input type="text" id="s_f_name" class="form-control"></div>
-                <div class="col-md-3"><label class="form-label">স্ট্যাটাস</label><select id="s_status" class="form-select"><option value="Active">Active</option><option value="Inactive">Inactive</option></select></div>
-                <div class="col-md-3"><label class="form-label">শিক্ষার্থীর ছবি আপলোড</label><input type="file" id="s_photo" class="form-control" accept="image/*"></div>
-             </div>
-             <button type="submit" class="btn btn-success mt-4 px-4"><i class="fa fa-save me-2"></i>শিক্ষার্থী ডাটা সংরক্ষণ করুন</button>
-          </form>
-        </div>
-      `;
-    }
-
-    function saveStudentForm(e) {
-      e.preventDefault();
-      const payload = {
-        StudentID: document.getElementById('s_id').value,
-        FullName: document.getElementById('s_name').value,
-        Class: document.getElementById('s_class').value,
-        Section: document.getElementById('s_sec').value,
-        Roll: document.getElementById('s_roll').value,
-        Mobile: document.getElementById('s_mob').value,
-        FatherName: document.getElementById('s_f_name').value,
-        Status: document.getElementById('s_status').value
-      };
-      
-      const photoFile = document.getElementById('s_photo').files[0];
-      if(photoFile) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          executeStudentSave(payload, e.target.result);
-        };
-        reader.readAsDataURL(photoFile);
+      if(students.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">কোনো ডাটা পাওয়া যায়নি! শিটে ডাটা লিখুন।</td></tr>`;
       } else {
-        executeStudentSave(payload, null);
+        students.forEach(student => {
+          const statusClass = student.Status === 'Active' ? 'status-active' : 'status-inactive';
+          const row = `
+            <tr>
+              <td class="fw-bold">${student.StudentID || '-'}</td>
+              <td>${student.FullName || '-'}</td>
+              <td><span class="badge bg-secondary">${student.Class || '-'}</span></td>
+              <td>${student.Section || '-'}</td>
+              <td>${student.Roll || '-'}</td>
+              <td>${student.Mobile || '-'}</td>
+              <td><span class="${statusClass}">${student.Status || 'Inactive'}</span></td>
+            </tr>
+          `;
+          tbody.innerHTML += row;
+        });
       }
+      
+      document.getElementById('table-wrapper').classList.remove('d-none');
     }
 
-    function executeStudentSave(data, base64Image) {
-      google.script.run.withSuccessHandler(res => {
-         alert("শিক্ষার্থীর রেকর্ড সফলভাবে ডেটাবেজে সংরক্ষিত হয়েছে!");
-         loadStudentManagement();
-      }).saveStudent(data, base64Image, null);
-    }
-
-    function handleLogout() {
-      session = { role: null, userId: null, username: null };
-      document.getElementById('app-workspace').classList.add('hidden');
-      document.getElementById('login-screen').classList.remove('hidden');
-      document.getElementById('login-form').reset();
-      document.getElementById('login-alert').classList.add('hidden');
+    function showError(msg) {
+      const alertDiv = document.getElementById('error-alert');
+      alertDiv.innerText = msg;
+      alertDiv.classList.remove('d-none');
     }
   </script>
 </body>
