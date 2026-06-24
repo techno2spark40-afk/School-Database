@@ -10,7 +10,7 @@ function doGet() {
 function getStudentsData() {
   try {
     // ⚠️ নিচে আপনার গুগল শিটের সম্পূর্ণ লিংকটি বসিয়ে দিন
-    const sheetUrl = "https://docs.google.com/spreadsheets/d/1khMELkp-jvEBeITncaaxpZ_0oCBXWSJEW6_9Dzw2-_c/edit"; 
+    const sheetUrl = "https://docs.google.com/spreadsheets/d/1khMELkp-jvEBeITncaaxpZ_0oCBXWSJEW6_9Dzw2-_c/edit?usp=sharing"; 
     
     const ss = SpreadsheetApp.openByUrl(sheetUrl);
     const sheet = ss.getSheetByName('Students'); // শিটের নাম 'Students' হতে হবে
